@@ -1,8 +1,11 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import * as Utils from "../src/utils";
 
 export const gridItemWidth = Utils.getWidthByPercent(45);
-const gridItemHeight = Utils.getHeightByPercent(55);
+const gridItemHeight =
+  Platform.OS === "ios"
+    ? Utils.getHeightByPercent(55)
+    : Utils.getHeightByPercent(58);
 export const gridItemImgHeight = Utils.getHeightByPercent(35);
 const padding = Utils.getWidthByPercent(3.5);
 
@@ -127,6 +130,7 @@ const Styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginVertical: "3%",
+    marginTop: Platform?.OS === "ios" ? 0 : "7%",
   },
   headerTitle: {
     flex: 1,

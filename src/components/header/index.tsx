@@ -23,6 +23,7 @@ const Header = ({ data, setUserInfo }: any) => {
       const count = await getAsyncData("count");
       setIsEnabled(lang !== "en");
       setCartCount(count);
+      console.log("res-cc", cartCount);
     }
     getData();
   }, [data?.cartCount]);
@@ -59,7 +60,11 @@ const Header = ({ data, setUserInfo }: any) => {
         >
           <View style={Styles.headerCount}>
             <Text style={Styles.headerCartCount}>
-              {cartCount > 9 ? `9+` : cartCount}
+              {cartCount > 9
+                ? `9+`
+                : cartCount != null && cartCount != undefined
+                ? cartCount
+                : 0}
             </Text>
           </View>
         </ImageBackground>
