@@ -63,7 +63,7 @@ const ProductListScreen = () => {
         const obj: productsProps = {
           resData: apiRes,
           productList: products,
-          isRtl: listPageState.isRtl && lang !== "en",
+          isRtl: lang !== "en",
           onRefresh: listPageState.onRefresh && false,
         };
         setListPageState(obj);
