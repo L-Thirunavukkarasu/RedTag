@@ -23,7 +23,6 @@ const Header = ({ data, setUserInfo }: any) => {
       const count = await getAsyncData("count");
       setIsEnabled(lang !== "en");
       setCartCount(count);
-      console.log("res-cc", cartCount);
     }
     getData();
   }, [data?.cartCount]);

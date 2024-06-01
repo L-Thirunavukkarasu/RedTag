@@ -17,6 +17,7 @@
     "expo-dev-client": "~4.0.15",
     "expo-status-bar": "~1.12.1",
     "expo-updates": "~0.25.14",
+    "moti": "^0.29.0",
     "react": "18.2.0",
     "react-native": "0.74.1",
     "react-native-fast-image": "^8.6.3",

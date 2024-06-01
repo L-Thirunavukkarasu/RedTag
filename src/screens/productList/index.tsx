@@ -12,7 +12,12 @@ import {
 } from "../../utils";
 import Header from "../../components/header";
 import { StateContext } from "../../hook/stateContext";
-import { resProps, itemProps, paginationProps } from "../../modal";
+import {
+  resProps,
+  itemProps,
+  paginationProps,
+  productsProps,
+} from "../../modal";
 
 const ProductListScreen = () => {
   const products: itemProps[] = [];
@@ -27,13 +32,17 @@ const ProductListScreen = () => {
     isListEnd: false,
     page: 1,
   };
-  const [resData, setResData] = useState(initRes);
-  const [productList, setProductList] = useState(paginationRes);
+  const listObj: productsProps = {
+    resData: initRes,
+    productList: paginationRes,
+    isRtl: false,
+    onRefresh: false,
+  };
   let isLoadMoreCalled = false;
   const [userInfo, setUserInfo] = useContext(StateContext);
-  const [onRefresh, setOnRefresh] = useState(false);
-  const [isRtl, setIsRtl] = useState(false);
+  const [listPageState, setListPageState] = useState(listObj);
   const initLoadCount = 8;
+  let cll = 0;
 
   useEffect(() => {
     async function getData() {
@@ -44,26 +53,21 @@ const ProductListScreen = () => {
           loading: false,
           total_products: res?.total_products,
         };
-        setResData(apiRes);
         //added logic for init load 8 items then every callback have to get another 4 items
-        setProductList(
-          generatePaginationRes(
-            res?.data?.slice(0, initLoadCount),
-            false,
-            false,
-            1
-          )
+        const products = generatePaginationRes(
+          res?.data?.slice(0, initLoadCount),
+          false,
+          false,
+          1
         );
-        onRefresh && setOnRefresh(false);
+        const obj: productsProps = {
+          resData: apiRes,
+          productList: products,
+          isRtl: listPageState.isRtl && lang !== "en",
+          onRefresh: listPageState.onRefresh && false,
+        };
+        setListPageState(obj);
       });
-    }
-    getData();
-  }, [onRefresh]);
-
-  useEffect(() => {
-    async function getData() {
-      const lang = await getAsyncData("lang");
-      setIsRtl(lang !== "en");
     }
     getData();
   }, []);
@@ -71,12 +75,12 @@ const ProductListScreen = () => {
   const renderFooter = () => {
     return (
       <View>
-        {productList?.isLoadMore && (
+        {listPageState.productList?.isLoadMore && (
           <ProgressBar isLoading={true} showShadowBox={false} />
         )}
-        {productList?.isListEnd && (
+        {listPageState.productList?.isListEnd && (
           <Text style={Styles.noMoreData}>
-            {isRtl
+            {listPageState.isRtl
               ? "لا مزيد من المنتجات في هذه اللحظة"
               : "No More products at this moment"}
           </Text>
@@ -87,55 +91,82 @@ const ProductListScreen = () => {
 
   const loadMoreUpdate = async () => {
     const loadCount = 4;
-    const totalPages = await getTotalPages(resData, loadCount, initLoadCount);
-    if (productList?.page <= totalPages) {
+    const totalPages = await getTotalPages(
+      listPageState.resData,
+      loadCount,
+      initLoadCount
+    );
+    if (listObj.productList?.page <= totalPages) {
       //added logic for init load 8 items then every callback have to get another 4 items
-      const startVal = (productList?.page + 1) * loadCount;
-      const endVal = (productList?.page + 2) * loadCount;
+      const startVal = (listPageState.productList?.page + 1) * loadCount;
+      const endVal = (listPageState.productList?.page + 2) * loadCount;
+      const newArray = listPageState.resData?.data.slice(startVal, endVal);
       const updatedArray = [
-        ...productList?.data,
-        ...resData?.data.slice(startVal, endVal),
+        ...listPageState.productList?.data,
+        ...listPageState.resData?.data.slice(startVal, endVal),
       ];
-      setTimeout(() => {
-        setProductList(
-          generatePaginationRes(
-            updatedArray,
-            false,
-            false,
-            productList?.page + 1
-          )
-        );
-      }, 1000);
-    } else {
-      setProductList(
-        generatePaginationRes(productList?.data, false, true, productList?.page)
+
+      const products = generatePaginationRes(
+        updatedArray,
+        false,
+        false,
+        listPageState.productList?.page + 1
       );
+      // setTimeout(() => {
+      //   const obj: productsProps = {
+      //     ...listPageState,
+      //     productList: products,
+      //   };
+      await newArray?.map((item: any) => {
+        listPageState.productList.data.push(item);
+      });
+
+      //setListPageState(obj);
+      // }, 1000);
+    } else {
       isLoadMoreCalled = false;
+      const products = generatePaginationRes(
+        listPageState.productList?.data,
+        false,
+        true,
+        listPageState.productList?.page
+      );
+      const obj: productsProps = {
+        ...listPageState,
+        productList: products,
+      };
+      setListPageState(obj);
     }
   };
 
   useEffect(() => {
-    if (productList.isLoadMore && !isLoadMoreCalled) {
+    if (listPageState.productList.isLoadMore && !isLoadMoreCalled) {
       isLoadMoreCalled = true;
       loadMoreUpdate();
     }
-  }, [productList.isLoadMore]);
+  }, [listPageState.productList.isLoadMore]);
 
   const loadMore = () => {
     const obj = {
-      ...productList,
+      ...listPageState.productList,
       isLoadMore: true,
     };
-    setProductList(obj);
+    const finalObj = {
+      ...listPageState,
+      productList: obj,
+    };
+    setListPageState(finalObj);
   };
+  cll = cll + 1;
+  console.log("res-called", cll);
 
   return (
     <View style={Styles.listContainer}>
       <Header data={userInfo} setUserInfo={setUserInfo} />
       <FlatList
-        data={productList?.data}
-        extraData={productList?.data}
-        renderItem={({ item }) => (
+        data={listPageState.productList?.data}
+        //extraData={listPageState.productList?.data}
+        renderItem={({ item, index }) => (
           <MemoizedComponent
             data={item}
             onAddToCart={async () => {
@@ -145,7 +176,8 @@ const ProductListScreen = () => {
               });
               await storeAsyncData("count", userInfo?.cartCount + 1);
             }}
-            isRtl={isRtl}
+            isRtl={listPageState.isRtl}
+            pos={index}
           />
         )}
         keyExtractor={() => Math.random().toString()}
@@ -154,18 +186,20 @@ const ProductListScreen = () => {
         onEndReachedThreshold={0.2}
         onEndReached={() => loadMore()}
         onRefresh={() => {
-          setOnRefresh(true);
-          const onRefreshRes: resProps = {
-            ...initRes,
+          const obj = {
+            ...listPageState,
+            onRefresh: true,
             loading: false,
           };
-          setResData(onRefreshRes);
-          setProductList(paginationRes);
+          setListPageState(obj);
         }}
-        refreshing={onRefresh}
+        refreshing={listPageState.onRefresh}
       />
-      {resData.loading && (
-        <ProgressBar isLoading={resData.loading} showShadowBox={true} />
+      {listPageState.resData.loading && (
+        <ProgressBar
+          isLoading={listPageState.resData.loading}
+          showShadowBox={true}
+        />
       )}
     </View>
   );

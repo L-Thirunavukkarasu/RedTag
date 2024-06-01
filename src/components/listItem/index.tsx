@@ -7,8 +7,9 @@ import { gridItemWidth, gridItemImgHeight } from "../../../assets/styles";
 import Carousel from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
 import Btn from "../btn";
+import { MotiView } from "moti";
 
-const ListItem = ({ data, onAddToCart, isRtl }: listItemProps) => {
+const ListItem = ({ data, onAddToCart, isRtl, pos }: listItemProps) => {
   const keyId = Math.random();
   const arrayOfObjects = Object.keys(data?.images).map(
     (key) => data?.images[key]
@@ -24,7 +25,13 @@ const ListItem = ({ data, onAddToCart, isRtl }: listItemProps) => {
   const txtStyle = isRtl ? Styles.txtStyleRTL : Styles.txtStyleLTR;
 
   return (
-    <View key={`${keyId}`} style={[Styles.item, Styles.shadow]}>
+    <MotiView
+      key={`${keyId}`}
+      style={[Styles.item, Styles.shadow]}
+      // from={{ opacity: 0, translateY: 50 }}
+      // animate={{ opacity: 1, translateY: 0 }}
+      // transition={{ delay: pos * 200 }}
+    >
       <Carousel
         {...baseOptions}
         loop
@@ -62,7 +69,7 @@ const ListItem = ({ data, onAddToCart, isRtl }: listItemProps) => {
           btnName={isRtl ? "أضف الى الحقيبة" : "ADD TO BAG"}
         />
       </View>
-    </View>
+    </MotiView>
   );
 };
 

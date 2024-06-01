@@ -19,6 +19,7 @@ interface listItemProps {
   data: itemProps;
   onAddToCart?: () => void;
   isRtl: boolean;
+  pos: number;
 }
 interface paginationProps {
   data: itemProps[];
@@ -32,4 +33,18 @@ interface cartBtnProps {
   btnName: string;
 }
 
-export { resProps, itemProps, listItemProps, paginationProps, cartBtnProps };
+interface productsProps {
+  resData: resProps;
+  productList: paginationProps;
+  isRtl: boolean;
+  onRefresh: boolean;
+}
+
+export {
+  resProps,
+  itemProps,
+  listItemProps,
+  paginationProps,
+  cartBtnProps,
+  productsProps,
+};
