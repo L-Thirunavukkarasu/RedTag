@@ -9,7 +9,7 @@ import { useSharedValue } from "react-native-reanimated";
 import Btn from "../btn";
 import { MotiView } from "moti";
 
-const ListItem = ({ data, onAddToCart, isRtl, pos }: listItemProps) => {
+const ListItem = ({ data, onAddToCart, isRtl, pos, page }: listItemProps) => {
   const keyId = Math.random();
   const arrayOfObjects = Object.keys(data?.images).map(
     (key) => data?.images[key]
@@ -28,9 +28,9 @@ const ListItem = ({ data, onAddToCart, isRtl, pos }: listItemProps) => {
     <MotiView
       key={`${keyId}`}
       style={[Styles.item, Styles.shadow]}
-      // from={{ opacity: 0, translateY: 50 }}
-      // animate={{ opacity: 1, translateY: 0 }}
-      // transition={{ delay: pos * 200 }}
+      // from={page == 1 ? { opacity: 0, translateY: 50 } : {}}
+      // animate={page == 1 ? { opacity: 1, translateY: 0 } : {}}
+      // transition={page == 1 ? { delay: pos * 200 } : {}}
     >
       <Carousel
         {...baseOptions}
@@ -50,7 +50,7 @@ const ListItem = ({ data, onAddToCart, isRtl, pos }: listItemProps) => {
       />
       <View style={Styles.itemInfo}>
         <Text numberOfLines={2} style={[Styles.itemName, txtStyle]}>
-          {data?.title}
+          {data?.title + pos}
         </Text>
         <Text numberOfLines={1} style={[Styles.itemCurrency, txtStyle]}>
           {data?.currency}

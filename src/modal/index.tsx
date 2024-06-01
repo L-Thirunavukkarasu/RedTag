@@ -20,6 +20,7 @@ interface listItemProps {
   onAddToCart?: () => void;
   isRtl: boolean;
   pos: number;
+  page: number;
 }
 interface paginationProps {
   data: itemProps[];

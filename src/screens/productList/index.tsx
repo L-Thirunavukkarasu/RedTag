@@ -112,17 +112,14 @@ const ProductListScreen = () => {
         false,
         listPageState.productList?.page + 1
       );
-      // setTimeout(() => {
-      //   const obj: productsProps = {
-      //     ...listPageState,
-      //     productList: products,
-      //   };
-      await newArray?.map((item: any) => {
-        listPageState.productList.data.push(item);
-      });
+      setTimeout(() => {
+        const obj: productsProps = {
+          ...listPageState,
+          productList: products,
+        };
 
-      //setListPageState(obj);
-      // }, 1000);
+        setListPageState(obj);
+      }, 1000);
     } else {
       isLoadMoreCalled = false;
       const products = generatePaginationRes(
@@ -158,7 +155,7 @@ const ProductListScreen = () => {
     setListPageState(finalObj);
   };
   cll = cll + 1;
-  console.log("res-called", cll);
+  //console.log("res-called", cll);
 
   return (
     <View style={Styles.listContainer}>
@@ -178,6 +175,7 @@ const ProductListScreen = () => {
             }}
             isRtl={listPageState.isRtl}
             pos={index}
+            page={listPageState.productList.page}
           />
         )}
         keyExtractor={() => Math.random().toString()}
