@@ -1,10 +1,12 @@
 import { Text, View, Switch, ImageBackground } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { getAsyncData, storeAsyncData, Colors } from "../../utils";
 import * as Updates from "expo-updates";
 import Styles from "../../../assets/styles";
+import Animated, { Easing } from "react-native-reanimated";
+import { MotiView } from "moti";
 
-const Header = ({ data, setUserInfo }: any) => {
+const Header = ({ data, setUserInfo, animStyle }: any) => {
   const [isEnabled, setIsEnabled] = useState(data?.selectedLang !== "en");
   const [cartCount, setCartCount] = useState(data?.cartCount);
   const toggleSwitch = async () => {
@@ -25,7 +27,7 @@ const Header = ({ data, setUserInfo }: any) => {
       setCartCount(count);
     }
     getData();
-  }, [data?.cartCount]);
+  }, [data?.cartCount, cartCount]);
 
   const containerStyle = isEnabled
     ? Styles.headerRTLDirection
@@ -57,7 +59,13 @@ const Header = ({ data, setUserInfo }: any) => {
           resizeMode="cover"
           style={Styles.headerImg}
         >
-          <View style={Styles.headerCount}>
+          <MotiView
+            key={`${animStyle}`}
+            style={[Styles.headerCount, animStyle]}
+            from={{ opacity: 0, translateY: 50 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ delay: 200 }}
+          >
             <Text style={Styles.headerCartCount}>
               {cartCount > 9
                 ? `9+`
@@ -65,11 +73,11 @@ const Header = ({ data, setUserInfo }: any) => {
                 ? cartCount
                 : 0}
             </Text>
-          </View>
+          </MotiView>
         </ImageBackground>
       </View>
     </View>
   );
 };
 
-export default Header;
+export const MemoizedHeader = memo(Header);

@@ -21,6 +21,7 @@ interface listItemProps {
   isRtl: boolean;
   pos: number;
   page: number;
+  initLoad: boolean;
 }
 interface paginationProps {
   data: itemProps[];
@@ -39,6 +40,7 @@ interface productsProps {
   productList: paginationProps;
   isRtl: boolean;
   onRefresh: boolean;
+  initLoad: boolean;
 }
 
 export {

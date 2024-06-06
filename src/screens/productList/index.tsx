@@ -1,5 +1,5 @@
 import { Text, View, FlatList } from "react-native";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import ProgressBar from "../../components/progress";
 import { getProducts } from "../../api";
 import Styles from "../../../assets/styles";
@@ -10,7 +10,7 @@ import {
   getTotalPages,
   storeAsyncData,
 } from "../../utils";
-import Header from "../../components/header";
+import { MemoizedHeader } from "../../components/header";
 import { StateContext } from "../../hook/stateContext";
 import {
   resProps,
@@ -18,6 +18,16 @@ import {
   paginationProps,
   productsProps,
 } from "../../modal";
+//animation
+import Animated, {
+  Easing,
+  useSharedValue,
+  interpolate,
+  useAnimatedStyle,
+  Extrapolation,
+  withTiming,
+  ReduceMotion,
+} from "react-native-reanimated";
 
 const ProductListScreen = () => {
   const products: itemProps[] = [];
@@ -37,12 +47,20 @@ const ProductListScreen = () => {
     productList: paginationRes,
     isRtl: false,
     onRefresh: false,
+    initLoad: true,
   };
   let isLoadMoreCalled = false;
   const [userInfo, setUserInfo] = useContext(StateContext);
   const [listPageState, setListPageState] = useState(listObj);
   const initLoadCount = 8;
-  let cll = 0;
+  const initialized = useRef(false);
+  var listProducts: itemProps[] = [];
+
+  //animation
+  const { Value, timing }: any = Animated;
+  const highlightAnimationValue = useSharedValue(0);
+  const highlightAnimationValue1 = withTiming(0);
+  const linear = useSharedValue<number>(0);
 
   useEffect(() => {
     async function getData() {
@@ -65,11 +83,21 @@ const ProductListScreen = () => {
           productList: products,
           isRtl: lang !== "en",
           onRefresh: listPageState.onRefresh && false,
+          initLoad: false,
         };
-        setListPageState(obj);
+        listProducts = products.data;
+        console.log("use", listProducts);
+        setUserInfo({
+          ...userInfo,
+          products: products.data,
+        });
+        listPageState?.initLoad && setListPageState(obj);
       });
     }
-    getData();
+    if (!initialized.current) {
+      initialized.current = true;
+      getData();
+    }
   }, []);
 
   const renderFooter = () => {
@@ -100,24 +128,31 @@ const ProductListScreen = () => {
       //added logic for init load 8 items then every callback have to get another 4 items
       const startVal = (listPageState.productList?.page + 1) * loadCount;
       const endVal = (listPageState.productList?.page + 2) * loadCount;
-      const newArray = listPageState.resData?.data.slice(startVal, endVal);
       const updatedArray = [
-        ...listPageState.productList?.data,
+        ...listPageState.productList.data,
         ...listPageState.resData?.data.slice(startVal, endVal),
       ];
-
+      listProducts = [
+        ...listProducts,
+        ...listPageState.resData?.data.slice(startVal, endVal),
+      ];
       const products = generatePaginationRes(
         updatedArray,
         false,
         false,
         listPageState.productList?.page + 1
       );
+      console.log("res---", updatedArray, products);
+
       setTimeout(() => {
         const obj: productsProps = {
           ...listPageState,
           productList: products,
         };
-
+        setUserInfo({
+          ...userInfo,
+          products: products.data,
+        });
         setListPageState(obj);
       }, 1000);
     } else {
@@ -154,14 +189,52 @@ const ProductListScreen = () => {
     };
     setListPageState(finalObj);
   };
-  cll = cll + 1;
-  //console.log("res-called", cll);
+
+  //animation
+  const startHighlightAnimation = () => {
+    // withTiming(highlightAnimationValue1, {
+    //   toValue: 1,
+    //   duration: 500, // Adjust duration as needed
+    //   easing: Easing.inOut(Easing.ease),
+    // })
+
+    withTiming(linear.value, {
+      duration: 1000,
+      easing: Easing.inOut(Easing.quad),
+      reduceMotion: ReduceMotion.System,
+    });
+  };
+
+  console.log("res-called", userInfo);
+
+  // const animStyle = {
+  //   transform: [
+  //     {
+  //       scale: highlightAnimationValue.interpolate({
+  //         inputRange: [0, 0.5, 1],
+  //         outputRange: [1, 1.2, 1],
+  //       }),
+  //     },
+  //   ],
+  // };
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      linear.value,
+      [0, 0.5, 1],
+      [1, 1.2, 1],
+      Extrapolation.EXTEND
+    ),
+  }));
 
   return (
     <View style={Styles.listContainer}>
-      <Header data={userInfo} setUserInfo={setUserInfo} />
+      <MemoizedHeader
+        data={userInfo}
+        setUserInfo={setUserInfo}
+        animStyle={animatedStyle}
+      />
       <FlatList
-        data={listPageState.productList?.data}
+        data={userInfo.products}
         //extraData={listPageState.productList?.data}
         renderItem={({ item, index }) => (
           <MemoizedComponent
@@ -172,10 +245,12 @@ const ProductListScreen = () => {
                 cartCount: userInfo?.cartCount + 1,
               });
               await storeAsyncData("count", userInfo?.cartCount + 1);
+              //startHighlightAnimation();
             }}
             isRtl={listPageState.isRtl}
             pos={index}
             page={listPageState.productList.page}
+            initLoad={listPageState.initLoad}
           />
         )}
         keyExtractor={() => Math.random().toString()}

@@ -9,7 +9,14 @@ import { useSharedValue } from "react-native-reanimated";
 import Btn from "../btn";
 import { MotiView } from "moti";
 
-const ListItem = ({ data, onAddToCart, isRtl, pos, page }: listItemProps) => {
+const ListItem = ({
+  data,
+  onAddToCart,
+  isRtl,
+  pos,
+  page,
+  initLoad,
+}: listItemProps) => {
   const keyId = Math.random();
   const arrayOfObjects = Object.keys(data?.images).map(
     (key) => data?.images[key]
@@ -23,14 +30,15 @@ const ListItem = ({ data, onAddToCart, isRtl, pos, page }: listItemProps) => {
 
   const scrollOffsetValue = useSharedValue<number>(0);
   const txtStyle = isRtl ? Styles.txtStyleRTL : Styles.txtStyleLTR;
+  console.log("ressss", page);
 
   return (
     <MotiView
       key={`${keyId}`}
       style={[Styles.item, Styles.shadow]}
-      // from={page == 1 ? { opacity: 0, translateY: 50 } : {}}
-      // animate={page == 1 ? { opacity: 1, translateY: 0 } : {}}
-      // transition={page == 1 ? { delay: pos * 200 } : {}}
+      from={initLoad ? { opacity: 0, translateY: 50 } : {}}
+      animate={initLoad ? { opacity: 1, translateY: 0 } : {}}
+      transition={initLoad ? { delay: pos * 200 } : {}}
     >
       <Carousel
         {...baseOptions}
