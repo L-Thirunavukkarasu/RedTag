@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const getProducts = async (lang: any) => {
+const getProducts = async (lang) => {
   const url = `https://shopifyapptst1.bma.ae/react-native-exercise/?lang=${lang}`;
   const response = await axios.get(url);
   const res = {

@@ -4,12 +4,7 @@ import FastImage from "react-native-fast-image";
 import * as Helper from "../../utils";
 import Styles from "../../../assets/styles";
 
-type props = {
-  url: any;
-  style: any;
-  defaultSrc?: any;
-};
-const FastImageView = (props: props) => {
+const FastImageView = (props) => {
   const { url, style } = props;
 
   const [isLoading, setLoading] = useState(true);

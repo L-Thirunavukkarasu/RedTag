@@ -1,22 +1,16 @@
 import React, { useState, createContext } from "react";
 import { itemProps } from "../../modal";
 
-type userInfo = {
-  selectedLang: string;
-  cartCount: number;
-  products: itemProps[];
-};
-
-const initUserInfo: userInfo = {
+const initUserInfo = {
   selectedLang: "en",
   cartCount: 0,
   products: [],
 };
 
 //invoke and export createcontext component
-export const StateContext = createContext<userInfo>(initUserInfo);
+export const StateContext = createContext(initUserInfo);
 
-export const StateProvider = (props: any) => {
+export const StateProvider = (props) => {
   const [userInfo, setUserInfo] = useState(initUserInfo);
 
   return (

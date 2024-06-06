@@ -30,19 +30,19 @@ import Animated, {
 } from "react-native-reanimated";
 
 const ProductListScreen = () => {
-  const products: itemProps[] = [];
-  const initRes: resProps = {
+  const products = [];
+  const initRes = {
     data: products,
     loading: true,
     total_products: 0,
   };
-  const paginationRes: paginationProps = {
+  const paginationRes = {
     data: products,
     isLoadMore: false,
     isListEnd: false,
     page: 1,
   };
-  const listObj: productsProps = {
+  const listObj = {
     resData: initRes,
     productList: paginationRes,
     isRtl: false,
@@ -54,13 +54,13 @@ const ProductListScreen = () => {
   const [listPageState, setListPageState] = useState(listObj);
   const initLoadCount = 8;
   const initialized = useRef(false);
-  var listProducts: itemProps[] = [];
+  var listProducts = [];
 
   //animation
-  const { Value, timing }: any = Animated;
+  const { Value, timing } = Animated;
   const highlightAnimationValue = useSharedValue(0);
   const highlightAnimationValue1 = withTiming(0);
-  const linear = useSharedValue<number>(0);
+  const linear = useSharedValue(0);
 
   useEffect(() => {
     async function getData() {
@@ -78,7 +78,7 @@ const ProductListScreen = () => {
           false,
           1
         );
-        const obj: productsProps = {
+        const obj = {
           resData: apiRes,
           productList: products,
           isRtl: lang !== "en",

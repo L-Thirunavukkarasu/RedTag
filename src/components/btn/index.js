@@ -3,7 +3,7 @@ import React from "react";
 import { cartBtnProps } from "../../modal";
 import Styles from "../../../assets/styles";
 
-const Btn = ({ btnOnPress, btnName }: cartBtnProps) => {
+const Btn = ({ btnOnPress, btnName }) => {
   return (
     <TouchableOpacity onPress={btnOnPress} style={Styles.btnAddToBag}>
       <Text style={Styles.btnAddTxt}>{btnName}</Text>

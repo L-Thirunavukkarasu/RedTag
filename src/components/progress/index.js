@@ -3,12 +3,7 @@ import React from "react";
 import Styles from "../../../assets/styles";
 import { Colors } from "../../utils";
 
-interface Props {
-  isLoading: boolean;
-  showShadowBox: boolean;
-}
-
-const ProgressBar = (props: Props) => {
+const ProgressBar = (props) => {
   return (
     <View style={props?.showShadowBox ? Styles.loaderContainer : Styles.loader}>
       <View

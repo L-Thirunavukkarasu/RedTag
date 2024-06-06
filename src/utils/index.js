@@ -5,10 +5,10 @@ const { width, height } = Dimensions.get("window");
 const screenWidth = width,
   screenHeight = height;
 
-const getWidthByPercent = (percent: number) => {
+const getWidthByPercent = (percent) => {
   return (screenWidth * percent) / 100;
 };
-const getHeightByPercent = (percent: number) => {
+const getHeightByPercent = (percent) => {
   return (screenHeight * percent) / 100;
 };
 
@@ -25,7 +25,7 @@ const Colors = {
   switch_thumb_clr: "#f4f3f4",
 };
 
-const storeAsyncData = async (key: string, value: any) => {
+const storeAsyncData = async (key, value) => {
   try {
     const jsonValue = JSON.stringify(value);
     await AsyncStorage.setItem(key, jsonValue);
@@ -37,7 +37,7 @@ const storeAsyncData = async (key: string, value: any) => {
   }
 };
 
-const getAsyncData = async (key: string) => {
+const getAsyncData = async (key) => {
   try {
     const jsonValue = await AsyncStorage.getItem(key);
     return jsonValue != null ? JSON.parse(jsonValue) : null;
@@ -47,12 +47,7 @@ const getAsyncData = async (key: string) => {
   }
 };
 
-const generatePaginationRes = (
-  res: any,
-  isLoadMore: any,
-  isListEnd: any,
-  page: any
-) => {
+const generatePaginationRes = (res, isLoadMore, isListEnd, page) => {
   return {
     data: res,
     isLoadMore,
@@ -61,11 +56,7 @@ const generatePaginationRes = (
   };
 };
 
-const getTotalPages = async (
-  res: any,
-  divideVal: number,
-  initLoadCount: number
-) => {
+const getTotalPages = async (res, divideVal, initLoadCount) => {
   return await Math.ceil((res?.data?.length - initLoadCount) / divideVal);
 };
 

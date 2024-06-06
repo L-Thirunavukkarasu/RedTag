@@ -6,7 +6,7 @@ import Styles from "../../../assets/styles";
 import Animated, { Easing } from "react-native-reanimated";
 import { MotiView } from "moti";
 
-const Header = ({ data, setUserInfo, animStyle }: any) => {
+const Header = ({ data, setUserInfo, animStyle }) => {
   const [isEnabled, setIsEnabled] = useState(data?.selectedLang !== "en");
   const [cartCount, setCartCount] = useState(data?.cartCount);
   const toggleSwitch = async () => {
