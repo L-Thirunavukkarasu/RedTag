@@ -3,7 +3,6 @@ import React, { useState, useEffect, memo } from "react";
 import { getAsyncData, storeAsyncData, Colors } from "../../utils";
 import * as Updates from "expo-updates";
 import Styles from "../../../assets/styles";
-import Animated, { Easing } from "react-native-reanimated";
 import { MotiView } from "moti";
 
 const Header = ({ data, setUserInfo, animStyle }) => {
@@ -61,7 +60,7 @@ const Header = ({ data, setUserInfo, animStyle }) => {
         >
           <MotiView
             key={`${animStyle}`}
-            style={[Styles.headerCount, animStyle]}
+            style={Styles.headerCount}
             from={{ opacity: 0, translateY: 50 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ delay: 200 }}

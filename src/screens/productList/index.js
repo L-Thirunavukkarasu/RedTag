@@ -1,70 +1,33 @@
 import { Text, View, FlatList } from "react-native";
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useEffect, useContext, useRef } from "react";
 import ProgressBar from "../../components/progress";
 import { getProducts } from "../../api";
 import Styles from "../../../assets/styles";
 import { MemoizedComponent } from "../../components/listItem";
-import {
-  generatePaginationRes,
-  getAsyncData,
-  getTotalPages,
-  storeAsyncData,
-} from "../../utils";
+import { getAsyncData, getTotalPages, storeAsyncData } from "../../utils";
 import { MemoizedHeader } from "../../components/header";
 import { StateContext } from "../../hook/stateContext";
-import {
-  resProps,
-  itemProps,
-  paginationProps,
-  productsProps,
-} from "../../modal";
 //animation
-import Animated, {
-  Easing,
+import {
   useSharedValue,
   interpolate,
   useAnimatedStyle,
   Extrapolation,
-  withTiming,
-  ReduceMotion,
 } from "react-native-reanimated";
 
 const ProductListScreen = () => {
-  const products = [];
-  const initRes = {
-    data: products,
-    loading: true,
-    total_products: 0,
-  };
-  const paginationRes = {
-    data: products,
-    isLoadMore: false,
-    isListEnd: false,
-    page: 1,
-  };
-  const listObj = {
-    resData: initRes,
-    productList: paginationRes,
-    isRtl: false,
-    onRefresh: false,
-    initLoad: true,
-  };
   let isLoadMoreCalled = false;
   const [userInfo, setUserInfo] = useContext(StateContext);
-  const [listPageState, setListPageState] = useState(listObj);
   const initLoadCount = 8;
   const initialized = useRef(false);
-  var listProducts = [];
 
   //animation
-  const { Value, timing } = Animated;
-  const highlightAnimationValue = useSharedValue(0);
-  const highlightAnimationValue1 = withTiming(0);
   const linear = useSharedValue(0);
 
   useEffect(() => {
     async function getData() {
       const lang = await getAsyncData("lang");
+      const count = await getAsyncData("count");
       getProducts(lang).then((res) => {
         const apiRes = {
           data: res?.data,
@@ -72,43 +35,33 @@ const ProductListScreen = () => {
           total_products: res?.total_products,
         };
         //added logic for init load 8 items then every callback have to get another 4 items
-        const products = generatePaginationRes(
-          res?.data?.slice(0, initLoadCount),
-          false,
-          false,
-          1
-        );
-        const obj = {
-          resData: apiRes,
-          productList: products,
-          isRtl: lang !== "en",
-          onRefresh: listPageState.onRefresh && false,
-          initLoad: false,
-        };
-        listProducts = products.data;
-        console.log("use", listProducts);
         setUserInfo({
           ...userInfo,
-          products: products.data,
+          resData: apiRes,
+          products: res?.data?.slice(0, initLoadCount),
+          onRefresh: false,
+          loading: false,
+          isRtl: lang !== "en",
+          page: 1,
+          cartCount: count,
         });
-        listPageState?.initLoad && setListPageState(obj);
       });
     }
     if (!initialized.current) {
       initialized.current = true;
       getData();
     }
-  }, []);
+  }, [userInfo.onRefresh]);
 
   const renderFooter = () => {
     return (
       <View>
-        {listPageState.productList?.isLoadMore && (
+        {userInfo?.isLoadMore && (
           <ProgressBar isLoading={true} showShadowBox={false} />
         )}
-        {listPageState.productList?.isListEnd && (
+        {userInfo?.isListEnd && (
           <Text style={Styles.noMoreData}>
-            {listPageState.isRtl
+            {userInfo.isRtl
               ? "لا مزيد من المنتجات في هذه اللحظة"
               : "No More products at this moment"}
           </Text>
@@ -120,103 +73,51 @@ const ProductListScreen = () => {
   const loadMoreUpdate = async () => {
     const loadCount = 4;
     const totalPages = await getTotalPages(
-      listPageState.resData,
+      userInfo.resData,
       loadCount,
       initLoadCount
     );
-    if (listObj.productList?.page <= totalPages) {
+    if (userInfo?.page <= totalPages) {
       //added logic for init load 8 items then every callback have to get another 4 items
-      const startVal = (listPageState.productList?.page + 1) * loadCount;
-      const endVal = (listPageState.productList?.page + 2) * loadCount;
+      const startVal = (userInfo?.page + 1) * loadCount;
+      const endVal = (userInfo?.page + 2) * loadCount;
       const updatedArray = [
-        ...listPageState.productList.data,
-        ...listPageState.resData?.data.slice(startVal, endVal),
+        ...userInfo.products,
+        ...userInfo.resData?.data.slice(startVal, endVal),
       ];
-      listProducts = [
-        ...listProducts,
-        ...listPageState.resData?.data.slice(startVal, endVal),
-      ];
-      const products = generatePaginationRes(
-        updatedArray,
-        false,
-        false,
-        listPageState.productList?.page + 1
-      );
-      console.log("res---", updatedArray, products);
-
       setTimeout(() => {
-        const obj: productsProps = {
-          ...listPageState,
-          productList: products,
-        };
         setUserInfo({
           ...userInfo,
-          products: products.data,
+          products: updatedArray,
+          isLoadMore: false,
+          isListEnd: false,
+          page: userInfo.page + 1,
         });
-        setListPageState(obj);
       }, 1000);
     } else {
-      isLoadMoreCalled = false;
-      const products = generatePaginationRes(
-        listPageState.productList?.data,
-        false,
-        true,
-        listPageState.productList?.page
-      );
-      const obj: productsProps = {
-        ...listPageState,
-        productList: products,
-      };
-      setListPageState(obj);
+      setUserInfo({
+        ...userInfo,
+        products: userInfo?.products,
+        isLoadMore: false,
+        isListEnd: true,
+      });
     }
+    isLoadMoreCalled = false;
   };
-
-  useEffect(() => {
-    if (listPageState.productList.isLoadMore && !isLoadMoreCalled) {
-      isLoadMoreCalled = true;
-      loadMoreUpdate();
-    }
-  }, [listPageState.productList.isLoadMore]);
 
   const loadMore = () => {
-    const obj = {
-      ...listPageState.productList,
-      isLoadMore: true,
-    };
-    const finalObj = {
-      ...listPageState,
-      productList: obj,
-    };
-    setListPageState(finalObj);
+    if (!isLoadMoreCalled) {
+      isLoadMoreCalled = true;
+      setUserInfo({
+        ...userInfo,
+        isLoadMore: true,
+      });
+      loadMoreUpdate();
+    }
   };
 
-  //animation
-  const startHighlightAnimation = () => {
-    // withTiming(highlightAnimationValue1, {
-    //   toValue: 1,
-    //   duration: 500, // Adjust duration as needed
-    //   easing: Easing.inOut(Easing.ease),
-    // })
+  //console.log("res-called", userInfo);
 
-    withTiming(linear.value, {
-      duration: 1000,
-      easing: Easing.inOut(Easing.quad),
-      reduceMotion: ReduceMotion.System,
-    });
-  };
-
-  console.log("res-called", userInfo);
-
-  // const animStyle = {
-  //   transform: [
-  //     {
-  //       scale: highlightAnimationValue.interpolate({
-  //         inputRange: [0, 0.5, 1],
-  //         outputRange: [1, 1.2, 1],
-  //       }),
-  //     },
-  //   ],
-  // };
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
       linear.value,
@@ -235,7 +136,6 @@ const ProductListScreen = () => {
       />
       <FlatList
         data={userInfo.products}
-        //extraData={listPageState.productList?.data}
         renderItem={({ item, index }) => (
           <MemoizedComponent
             data={item}
@@ -245,12 +145,11 @@ const ProductListScreen = () => {
                 cartCount: userInfo?.cartCount + 1,
               });
               await storeAsyncData("count", userInfo?.cartCount + 1);
-              //startHighlightAnimation();
             }}
-            isRtl={listPageState.isRtl}
+            isRtl={userInfo.isRtl}
             pos={index}
-            page={listPageState.productList.page}
-            initLoad={listPageState.initLoad}
+            page={userInfo.page}
+            initLoad={userInfo.initLoad}
           />
         )}
         keyExtractor={() => Math.random().toString()}
@@ -259,20 +158,18 @@ const ProductListScreen = () => {
         onEndReachedThreshold={0.2}
         onEndReached={() => loadMore()}
         onRefresh={() => {
-          const obj = {
-            ...listPageState,
+          initialized.current = false;
+          setUserInfo({
+            ...userInfo,
             onRefresh: true,
             loading: false,
-          };
-          setListPageState(obj);
+            products: [],
+          });
         }}
-        refreshing={listPageState.onRefresh}
+        refreshing={userInfo.onRefresh}
       />
-      {listPageState.resData.loading && (
-        <ProgressBar
-          isLoading={listPageState.resData.loading}
-          showShadowBox={true}
-        />
+      {userInfo.loading && (
+        <ProgressBar isLoading={true} showShadowBox={true} />
       )}
     </View>
   );

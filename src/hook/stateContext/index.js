@@ -1,10 +1,17 @@
 import React, { useState, createContext } from "react";
-import { itemProps } from "../../modal";
 
 const initUserInfo = {
   selectedLang: "en",
   cartCount: 0,
   products: [],
+  onRefresh: false,
+  loading: true,
+  isLoadMore: false,
+  isListEnd: false,
+  page: 1,
+  resData: [],
+  isRtl: false,
+  initLoad: false,
 };
 
 //invoke and export createcontext component
